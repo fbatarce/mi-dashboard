@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | Monitor Web</title>
     <style>
-        /* --- Estilos Avanzados v2.0 --- */
+        /* --- Estilos Avanzados v3.0 --- */
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
         :root {
@@ -18,13 +18,21 @@
             --primary-hover: #1d4ed8;
             --status-up: #10b981;
             --status-down: #ef4444;
+            --success-bg: #f0fdf4;
+            --success-text: #166534;
+            --error-bg: #fef2f2;
+            --error-text: #b91c1c;
             --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            --transition: all 0.2s ease-in-out;
+        }
+
+        * {
+            box-sizing: border-box;
         }
 
         body {
             margin: 0;
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
             line-height: 1.6;
@@ -32,7 +40,7 @@
 
         main {
             padding: 2em;
-            max-width: 960px;
+            max-width: 1024px;
             margin: 2em auto;
         }
         
@@ -53,7 +61,7 @@
         }
 
         .input-group {
-            margin-bottom: 1.5em;
+            margin-bottom: 1.25em;
             text-align: left;
         }
 
@@ -92,10 +100,15 @@
             transition: var(--transition);
         }
 
-        .auth-button:hover {
+        .auth-button:hover:not(:disabled) {
             background-color: var(--primary-hover);
         }
         
+        .auth-button:disabled {
+            background-color: #94a3b8;
+            cursor: not-allowed;
+        }
+
         #auth-toggle {
             margin-top: 1.5em;
             background: none;
@@ -103,11 +116,15 @@
             color: var(--primary-color);
             cursor: pointer;
             font-weight: 500;
+            transition: var(--transition);
+        }
+        #auth-toggle:hover {
+            text-decoration: underline;
         }
         
         /* --- Estilos del Dashboard --- */
         #dashboard-view {
-            display: none; /* Oculto por defecto */
+            display: none;
         }
 
         header {
@@ -116,8 +133,12 @@
             align-items: center;
             border-bottom: 1px solid var(--border-color);
             padding-bottom: 1em;
-            margin-bottom: 2em;
+            margin-bottom: 1em;
         }
+        
+        header p { margin: 0.25em 0 0; color: #64748b; }
+        h1 { color: var(--heading-color); font-size: 2rem; font-weight: 700; margin: 0; }
+        h3 { color: var(--heading-color); margin-top: 0; font-size: 1.25rem; }
 
         #logout-button {
             padding: 0.5em 1em;
@@ -131,20 +152,40 @@
 
         #logout-button:hover {
             background-color: #f1f5f9;
+            border-color: #cbd5e1;
         }
         
-        #status-container {
+        /* Formulario de añadir sitio */
+        #add-site-section {
             background-color: var(--card-bg);
+            padding: 2em;
             border-radius: 12px;
             box-shadow: var(--shadow);
-            overflow: hidden;
-            transition: opacity 0.5s ease-in-out;
+            margin: 2em 0;
         }
-
+        #add-site-form { display: flex; align-items: flex-end; gap: 1em; flex-wrap: wrap; }
+        #add-site-form .input-group { flex: 1 1 200px; margin-bottom: 0; }
+        #add-site-form .auth-button { width: auto; flex-shrink: 0; }
+        
+        .form-message {
+            margin-top: 1em;
+            font-weight: 500;
+            padding: 0.75em;
+            border-radius: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+        .form-message.visible { opacity: 1; }
+        .success-message { color: var(--success-text); background-color: var(--success-bg); }
+        .error-message { color: var(--error-text); background-color: var(--error-bg); }
+        
+        /* Tabla de Resultados */
+        #status-container { background-color: var(--card-bg); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
         table { width: 100%; border-collapse: collapse; }
         th, td { padding: 16px 20px; text-align: left; border-bottom: 1px solid var(--border-color); }
         thead th { background-color: #f8fafc; font-size: 0.875rem; text-transform: uppercase; color: #64748b; font-weight: 600; }
         tbody tr:last-child td { border-bottom: none; }
+        tbody tr { transition: var(--transition); }
         tbody tr:hover { background-color: #f8fafc; }
         td:first-child { font-weight: 600; color: var(--heading-color); }
 
@@ -154,10 +195,7 @@
         .up .status-indicator { background-color: var(--status-up); }
         .down { color: var(--status-down); font-weight: 700; }
         .down .status-indicator { background-color: var(--status-down); }
-
-        .message-container { padding: 4em; text-align: center; font-size: 1.125rem; color: #64748b; }
-        .error-message { color: var(--status-down); font-weight: 500; margin-top: 1em; }
-
+        .message-container { padding: 4em; text-align: center; color: #64748b; }
     </style>
 </head>
 <body>
@@ -171,12 +209,12 @@
                 </div>
                 <div class="input-group">
                     <label for="password">Contraseña</label>
-                    <input type="password" id="password" required />
+                    <input type="password" id="password" required minlength="6" />
                 </div>
                 <button type="submit" class="auth-button" id="auth-button">Crear cuenta</button>
             </form>
             <button id="auth-toggle">¿Ya tienes una cuenta? Inicia sesión</button>
-            <div id="auth-error" class="error-message"></div>
+            <div id="auth-error" class="error-message form-message"></div>
         </div>
 
         <div id="dashboard-view">
@@ -187,7 +225,23 @@
                 </div>
                 <button id="logout-button">Cerrar Sesión</button>
             </header>
-            
+
+            <section id="add-site-section">
+                <h3>Añadir un nuevo sitio para monitorear</h3>
+                <form id="add-site-form">
+                    <div class="input-group">
+                        <label for="site-url">URL del Sitio Web</label>
+                        <input type="url" id="site-url" placeholder="https://ejemplo.com" required />
+                    </div>
+                     <div class="input-group">
+                        <label for="site-name">Nombre (Opcional)</label>
+                        <input type="text" id="site-name" placeholder="Mi Blog Personal" />
+                    </div>
+                    <button type="submit" class="auth-button" id="add-site-button">Añadir Sitio</button>
+                </form>
+                <div id="add-site-message" class="form-message"></div>
+            </section>
+
             <div id="status-container">
                 <table>
                     <thead>
@@ -208,9 +262,8 @@
     <script type="module">
         import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
-        // --- ¡ACCIÓN REQUERIDA! ---
         const SUPABASE_URL = 'https://mnsxmbrovvyafcgetbpz.supabase.co'
-        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uc3htYnJvdnZ5YWZjZ2V0YnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNzQ3MDcsImV4cCI6MjA2NTk1MDcwN30.C6o3XCvbGDWggTatwdctu6sNc37YD5hARMgeahnMPLk'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uc3htYnJvdnZ5YWZjZ2V0YnB6Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MDM3NDcwNywiZXhwIjoyMDY1OTUwNzA3fQ.8WB7Sc3Nb0-rMPh5Q5Gz6wngqXSTvmlyJ-X3dNAaWlU'
 
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -228,24 +281,28 @@
         const messageContainer = document.getElementById('message-container');
         const emailInput = document.getElementById('email');
         const passwordInput = document.getElementById('password');
-
-        let isLogin = false;
+        const addSiteForm = document.getElementById('add-site-form');
+        const siteUrlInput = document.getElementById('site-url');
+        const siteNameInput = document.getElementById('site-name');
+        const addSiteMessage = document.getElementById('add-site-message');
+        const addSiteButton = document.getElementById('add-site-button');
 
         // --- Lógica de Autenticación ---
-
-        // Cambiar entre modo Login y Registro
         authToggle.addEventListener('click', () => {
             isLogin = !isLogin;
             authTitle.textContent = isLogin ? 'Iniciar Sesión' : 'Crear una cuenta';
             authButton.textContent = isLogin ? 'Iniciar Sesión' : 'Crear cuenta';
             authToggle.textContent = isLogin ? '¿No tienes una cuenta? Regístrate' : '¿Ya tienes una cuenta? Inicia sesión';
             authError.textContent = '';
+            authError.classList.remove('visible');
         });
         
-        // Manejar envío del formulario de Login/Registro
         authForm.addEventListener('submit', async (event) => {
             event.preventDefault();
+            authButton.disabled = true;
+            authButton.textContent = 'Procesando...';
             authError.textContent = '';
+            authError.classList.remove('visible');
             const email = emailInput.value;
             const password = passwordInput.value;
             let error;
@@ -263,26 +320,74 @@
 
             if (error) {
                 authError.textContent = error.message;
+                authError.classList.add('visible');
             }
+            authButton.disabled = false;
+            authButton.textContent = isLogin ? 'Iniciar Sesión' : 'Crear cuenta';
         });
 
-        // Manejar cierre de sesión
         logoutButton.addEventListener('click', async () => {
             await supabase.auth.signOut();
         });
 
-        // --- Lógica del Dashboard ---
+        // --- Lógica para Añadir Sitios ---
+        addSiteForm.addEventListener('submit', async (event) => {
+            event.preventDefault();
+            addSiteButton.disabled = true;
+            addSiteButton.textContent = 'Añadiendo...';
+            addSiteMessage.textContent = '';
+            addSiteMessage.className = 'form-message';
 
+            const { data: { session } } = await supabase.auth.getSession();
+            const user = session?.user;
+
+            if (!user) {
+                addSiteMessage.textContent = 'Error: Debes iniciar sesión para añadir un sitio.';
+                addSiteMessage.className = 'form-message error-message visible';
+                addSiteButton.disabled = false;
+                return;
+            }
+
+            try {
+                const { error } = await supabase
+                    .from('websites')
+                    .insert({ 
+                        url: siteUrlInput.value, 
+                        name: siteNameInput.value || null,
+                        user_id: user.id
+                    });
+                
+                if (error) throw error;
+
+                addSiteMessage.textContent = '¡Sitio añadido con éxito!';
+                addSiteMessage.className = 'form-message success-message visible';
+                addSiteForm.reset();
+                fetchData(user.id);
+
+            } catch (err) {
+                addSiteMessage.textContent = `Error: ${err.message}`;
+                addSiteMessage.className = 'form-message error-message visible';
+            } finally {
+                addSiteButton.disabled = false;
+                addSiteButton.textContent = 'Añadir Sitio';
+                setTimeout(() => { 
+                    addSiteMessage.textContent = '';
+                    addSiteMessage.classList.remove('visible');
+                }, 4000);
+            }
+        });
+
+        // --- Lógica del Dashboard ---
         async function fetchData(userId) {
             messageContainer.textContent = 'Cargando datos...';
+            messageContainer.style.display = 'block';
             try {
-                // Ahora filtramos por el user_id del usuario que ha iniciado sesión
                 const { data, error } = await supabase
                     .from('status_checks')
-                    .select(`id, created_at, status_text, response_time_ms, websites!inner ( url )`)
-                    .eq('websites.user_id', userId) // ¡El filtro de seguridad!
+                    .select(`id, created_at, status_text, response_time_ms, websites!inner( url )`)
+                    .eq('websites.user_id', userId)
                     .order('created_at', { ascending: false })
-                    .limit(20);
+                    .limit(50);
 
                 if (error) throw error;
                 
@@ -295,13 +400,13 @@
                 }
 
                 for (const check of data) {
-                     const row = document.createElement('tr');
+                    const row = document.createElement('tr');
                     const statusClass = check.status_text === 'UP' ? 'up' : 'down';
                     row.innerHTML = `
                         <td>${check.websites ? check.websites.url : 'URL no encontrada'}</td>
                         <td class="${statusClass}"><div class="status-cell"><span class="status-indicator"></span><span>${check.status_text}</span></div></td>
                         <td>${check.response_time_ms} ms</td>
-                        <td>${new Date(check.created_at).toLocaleString('es-CL')}</td>
+                        <td>${new Date(check.created_at).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'medium' })}</td>
                     `;
                     tableBody.appendChild(row);
                 }
@@ -312,21 +417,18 @@
         }
         
         // --- Controlador Principal de Sesión ---
-
+        let isLogin = false;
         supabase.auth.onAuthStateChange((event, session) => {
             if (session && session.user) {
-                // Usuario ha iniciado sesión
                 authView.style.display = 'none';
                 dashboardView.style.display = 'block';
-                welcomeMessage.textContent = `Bienvenido, ${session.user.email}`;
+                welcomeMessage.textContent = `Sesión iniciada como ${session.user.email}`;
                 fetchData(session.user.id);
             } else {
-                // Usuario no ha iniciado sesión
                 authView.style.display = 'block';
                 dashboardView.style.display = 'none';
             }
         });
-
     </script>
 </body>
 </html>
