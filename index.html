@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de Sitios Web</title>
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; background-color: #f9f9f9; color: #333; }
+        main { padding: 2em; max-width: 900px; margin: auto; }
+        h1 { color: #404040; }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Monitor de Sitios Web</title>
+    <style>
+        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; background-color: #f9f9f9; color: #333; }
+        main { padding: 2em; max-width: 900px; margin: auto; }
+        h1 { color: #404040; }
+        table { width: 100%; border-collapse: collapse; margin-top: 2em; background-color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .up { color: #2a9d8f; font-weight: bold; }
+        .down { color: #e76f51; font-weight: bold; }
+        .error { color: crimson; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Dashboard del Monitor Web</h1>
+        <p>Mostrando los últimos resultados de las verificaciones automáticas.</p>
+        <div id="loading">Cargando datos...</div>
+        <div id="error-message" class="error"></div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Sitio Web</th>
+                    <th>Estado</th>
+                    <th>Tiempo de Resp.</th>
+                    <th>Fecha de Verificación</th>
+                </tr>
+            </thead>
+            <tbody id="checks-table-body">
+                </tbody>
+        </table>
+    </main>
+
+    <script type="module">
+        // Importamos la librería de Supabase directamente desde internet
+        import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
+
+        // --- ¡ACCIÓN REQUERIDA! ---
+        const SUPABASE_URL = 'https://mnsxmbrovvyafcgetbpz.supabase.co'
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1uc3htYnJvdnZ5YWZjZ2V0YnB6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTAzNzQ3MDcsImV4cCI6MjA2NTk1MDcwN30.C6o3XCvbGDWggTatwdctu6sNc37YD5hARMgeahnMPLk'
+        // --- Fin de Acción Requerida ---
+
+        const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const tableBody = document.getElementById('checks-table-body');
+        const loadingDiv = document.getElementById('loading');
+        const errorDiv = document.getElementById('error-message');
+
+        async function fetchData() {
+            try {
+                const { data, error } = await supabase
+                    .from('status_checks')
+                    .select(`id, checked_at, status_text, response_time_ms, websites ( url )`)
+                    .order('checked_at', { ascending: false })
+                    .limit(20);
+
+                if (error) throw error;
+                loadingDiv.style.display = 'none';
+                tableBody.innerHTML = ''; // Limpiar la tabla antes de llenarla
+
+                if (data.length === 0) {
+                    loadingDiv.textContent = 'No hay datos de verificaciones todavía. El monitor automático corre cada 5 minutos.';
+                    loadingDiv.style.display = 'block';
+                }
+
+                for (const check of data) {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${check.websites ? check.websites.url : 'URL no encontrada'}</td>
+                        <td class="${check.status_text === 'UP' ? 'up' : 'down'}">${check.status_text}</td>
+                        <td>${check.response_time_ms} ms</td>
+                        <td>${new Date(check.checked_at).toLocaleString('es-CL')}</td>
+                    `;
+                    tableBody.appendChild(row);
+                }
+            } catch (err) {
+                loadingDiv.style.display = 'none';
+                errorDiv.textContent = `Error al cargar los datos: ${err.message}`;
+                console.error(err);
+            }
+        }
+
+        fetchData();
+    </script>
+</body>
+</html>
