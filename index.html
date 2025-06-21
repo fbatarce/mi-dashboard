@@ -3,51 +3,163 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor de Sitios Web</title>
+    <title>Dashboard | Monitor Web</title>
     <style>
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; background-color: #f9f9f9; color: #333; }
-        main { padding: 2em; max-width: 900px; margin: auto; }
-        h1 { color: #404040; }
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Monitor de Sitios Web</title>
-    <style>
-        body { margin: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif; background-color: #f9f9f9; color: #333; }
-        main { padding: 2em; max-width: 900px; margin: auto; }
-        h1 { color: #404040; }
-        table { width: 100%; border-collapse: collapse; margin-top: 2em; background-color: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        th, td { border: 1px solid #ddd; padding: 12px; text-align: left; }
-        th { background-color: #f2f2f2; }
-        .up { color: #2a9d8f; font-weight: bold; }
-        .down { color: #e76f51; font-weight: bold; }
-        .error { color: crimson; font-weight: bold; }
+        /* --- Estilos Mejorados --- */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap');
+
+        :root {
+            --bg-color: #f4f7f9;
+            --card-bg: #ffffff;
+            --text-color: #334155;
+            --heading-color: #0f172a;
+            --border-color: #e2e8f0;
+            --status-up: #10b981;
+            --status-down: #ef4444;
+            --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            line-height: 1.6;
+        }
+
+        main {
+            padding: 2em;
+            max-width: 960px;
+            margin: 2em auto;
+        }
+
+        header {
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 1em;
+            margin-bottom: 2em;
+        }
+
+        h1 {
+            color: var(--heading-color);
+            font-size: 2.25rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        header p {
+            margin-top: 0.5em;
+            font-size: 1.125rem;
+            color: #64748b;
+        }
+        
+        #status-container {
+            background-color: var(--card-bg);
+            border-radius: 12px;
+            box-shadow: var(--shadow);
+            overflow: hidden; /* Para mantener los bordes redondeados en la tabla */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        thead th {
+            background-color: #f8fafc;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+            font-weight: 600;
+        }
+        
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        
+        tbody tr:hover {
+            background-color: #f8fafc;
+        }
+
+        td:first-child {
+            font-weight: 600;
+            color: var(--heading-color);
+        }
+
+        .status-cell {
+            display: flex;
+            align-items: center;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .up {
+            color: var(--status-up);
+            font-weight: 700;
+        }
+        .up .status-indicator {
+            background-color: var(--status-up);
+        }
+
+        .down {
+            color: var(--status-down);
+            font-weight: 700;
+        }
+        .down .status-indicator {
+            background-color: var(--status-down);
+        }
+
+        .message-container {
+            padding: 4em;
+            text-align: center;
+            font-size: 1.125rem;
+            color: #64748b;
+        }
+
+        .error {
+            color: var(--status-down);
+        }
     </style>
 </head>
 <body>
     <main>
-        <h1>Dashboard del Monitor Web</h1>
-        <p>Mostrando los últimos resultados de las verificaciones automáticas.</p>
-        <div id="loading">Cargando datos...</div>
-        <div id="error-message" class="error"></div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Sitio Web</th>
-                    <th>Estado</th>
-                    <th>Tiempo de Resp.</th>
-                    <th>Fecha de Verificación</th>
-                </tr>
-            </thead>
-            <tbody id="checks-table-body">
-                </tbody>
-        </table>
+        <header>
+            <h1>Dashboard del Monitor Web</h1>
+            <p>Mostrando los últimos resultados de las verificaciones automáticas.</p>
+        </header>
+        
+        <div id="status-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Sitio Web</th>
+                        <th>Estado</th>
+                        <th>Tiempo de Resp.</th>
+                        <th>Fecha de Verificación</th>
+                    </tr>
+                </thead>
+                <tbody id="checks-table-body">
+                    </tbody>
+            </table>
+            <div id="message-container" class="message-container">
+                Cargando datos...
+            </div>
+        </div>
     </main>
 
     <script type="module">
-        // Importamos la librería de Supabase directamente desde internet
         import { createClient } from 'https://esm.sh/@supabase/supabase-js@2'
 
         // --- ¡ACCIÓN REQUERIDA! ---
@@ -57,44 +169,52 @@
 
         const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
         const tableBody = document.getElementById('checks-table-body');
-        const loadingDiv = document.getElementById('loading');
-        const errorDiv = document.getElementById('error-message');
+        const messageContainer = document.getElementById('message-container');
 
         async function fetchData() {
             try {
                 const { data, error } = await supabase
                     .from('status_checks')
-                    .select(`id, checked_at, status_text, response_time_ms, websites ( url )`)
-                    .order('checked_at', { ascending: false })
+                    .select(`id, created_at, status_text, response_time_ms, websites ( url )`)
+                    .order('created_at', { ascending: false })
                     .limit(20);
 
                 if (error) throw error;
-                loadingDiv.style.display = 'none';
-                tableBody.innerHTML = ''; // Limpiar la tabla antes de llenarla
+                
+                tableBody.innerHTML = ''; 
 
                 if (data.length === 0) {
-                    loadingDiv.textContent = 'No hay datos de verificaciones todavía. El monitor automático corre cada 5 minutos.';
-                    loadingDiv.style.display = 'block';
+                    messageContainer.textContent = 'No hay datos de verificaciones todavía. El monitor automático corre cada 5 minutos.';
+                    messageContainer.style.display = 'block';
+                } else {
+                    messageContainer.style.display = 'none';
                 }
 
                 for (const check of data) {
                     const row = document.createElement('tr');
+                    const statusClass = check.status_text === 'UP' ? 'up' : 'down';
                     row.innerHTML = `
                         <td>${check.websites ? check.websites.url : 'URL no encontrada'}</td>
-                        <td class="${check.status_text === 'UP' ? 'up' : 'down'}">${check.status_text}</td>
+                        <td class="${statusClass}">
+                            <div class="status-cell">
+                                <span class="status-indicator"></span>
+                                <span>${check.status_text}</span>
+                            </div>
+                        </td>
                         <td>${check.response_time_ms} ms</td>
-                        <td>${new Date(check.checked_at).toLocaleString('es-CL')}</td>
+                        <td>${new Date(check.created_at).toLocaleString('es-CL')}</td>
                     `;
                     tableBody.appendChild(row);
                 }
             } catch (err) {
-                loadingDiv.style.display = 'none';
-                errorDiv.textContent = `Error al cargar los datos: ${err.message}`;
+                messageContainer.innerHTML = `<span class="error">Error al cargar los datos: ${err.message}</span>`;
                 console.error(err);
             }
         }
 
+        // Carga los datos al iniciar y luego cada 60 segundos
         fetchData();
+        setInterval(fetchData, 60000);
     </script>
 </body>
 </html>
